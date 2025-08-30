@@ -11,7 +11,7 @@ In today's global digital landscape, technology companies face a significant cha
 The core of this prototype is a Python-based command-line application that automates the analysis of feature descriptions.
 
 - **Automated Compliance Analysis:** The system takes a CSV file containing feature names and descriptions as input.
-- **LLM-Powered Intelligence:** It uses OpenAI's GPT-4 Turbo model to analyze each description, leveraging a carefully engineered prompt to distinguish between legally mandated requirements and business-driven regional variations.
+- **LLM-Powered Intelligence:** It uses OpenAI's GPT-4.1 mini model to analyze each description, leveraging a carefully engineered prompt to distinguish between legally mandated requirements and business-driven regional variations.
 - **Structured Output:** For each feature, the system outputs:
     - `is_geo_compliance_needed`: A boolean flag (`true`/`false`).
     - `reasoning`: A clear, human-readable explanation for the classification.
@@ -22,7 +22,7 @@ The core of this prototype is a Python-based command-line application that autom
 ## Development Stack
 
 - **Development Tool:** Python 3
-- **APIs Used:** OpenAI API (specifically, the `gpt-4-turbo` model)
+- **APIs Used:** OpenAI API (specifically, the `gpt-4.1-mini` model)
 - **Libraries Used:**
     - `openai`: To interact with the OpenAI API.
     - `python-dotenv`: To manage environment variables securely (for the API key).

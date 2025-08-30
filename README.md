@@ -4,7 +4,7 @@ This project is a prototype system that utilizes LLM capabilities to automatical
 
 ## How It Works
 
-The system uses a Python script to read a list of features from a CSV file. For each feature, it sends the description to the OpenAI GPT-4 Turbo API with a specialized prompt. The LLM then analyzes the text and returns a structured JSON object indicating whether geo-specific compliance is needed, the reasoning behind the decision, and any specific regulation mentioned. The results are then compiled into a new CSV file.
+The system uses a Python script to read a list of features from a CSV file. For each feature, it sends the description to the OpenAI GPT-4.1 mini API with a specialized prompt. The LLM then analyzes the text and returns a structured JSON object indicating whether geo-specific compliance is needed, the reasoning behind the decision, and any specific regulation mentioned. The results are then compiled into a new CSV file.
 
 ## Getting Started
 
