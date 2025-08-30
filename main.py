@@ -12,12 +12,10 @@ def process_csv(input_filepath: str, output_filepath: str):
         input_filepath: Path to the input CSV file.
         output_filepath: Path to the output CSV file.
     """
-    # Check for OpenAI API key
-    if not os.getenv("OPENAI_API_KEY"):
-        print("Error: The OPENAI_API_KEY environment variable is not set.")
-        print("Please set it before running the script.")
-        print("Example: export OPENAI_API_KEY='your-api-key'")
-        return
+    # No API key check needed for Ollama
+    print("Using Ollama with DeepSeek-R1 model...")
+    print("Make sure Ollama is running locally (ollama serve)")
+    print("And that you have pulled the model (ollama pull deepseek-r1)\n")
 
     try:
         with open(input_filepath, mode='r', encoding='utf-8') as infile:
