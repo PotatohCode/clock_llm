@@ -1,10 +1,19 @@
 import os
 import csv
 import json
-import requests
+import urllib.request
+# from openai import OpenAI
 
-# Ollama API endpoint (default local installation)
-OLLAMA_API_URL = os.getenv("OLLAMA_API_URL", "http://localhost:11434/api/chat")
+# It is recommended to set the OpenAI API key as an environment variable.
+# Example: export OPENAI_API_KEY='your-api-key'
+# The client automatically picks it up from the environment.
+# try:
+#     client = OpenAI()
+# except ImportError:
+#     print("OpenAI library is not installed. Please install it using 'pip install openai'")
+#     client = None
+
+OLLAMA_HOST = os.environ.get('OLLAMA_HOST', 'http://localhost:11434')
 
 # --- Glossary Loading and Caching ---
 _glossary_cache = None
@@ -41,7 +50,13 @@ def analyze_feature_description(description: str) -> dict:
     Analyzes a feature description using an LLM to determine if it requires
     geo-specific compliance logic, using a glossary for context.
     """
-    
+    # if not client:
+    #     return {
+    #         "is_geo_compliance_needed": None,
+    #         "reasoning": "OpenAI client is not initialized. Please check your installation.",
+    #         "relevant_regulation": "N/A"
+    #     }
+
     glossary_context = _load_glossary()
 
     prompt = f"""
@@ -133,61 +148,45 @@ def analyze_feature_description(description: str) -> dict:
     Now, check the core regulations first, then search the web for additional relevant regulations, then provide your JSON analysis.
     """
 
+    payload = {
+        "model": os.environ.get("OLLAMA_MODEL", "deepseek-r1:8b"),
+        "messages": [
+            {"role": "system", "content": "You are an expert compliance analyst AI."},
+            {"role": "user", "content": prompt}
+        ],
+        "stream": False,
+        "format": "json"
+    }
     try:
-        # Prepare the request for Ollama
-        payload = {
-            "model": "deepseek-r1",
-            "messages": [
-                {"role": "system", "content": "You are an expert compliance analyst AI."},
-                {"role": "user", "content": prompt}
-            ],
-            "stream": False,
-            "format": "json"  # Request JSON response format
-        }
-        
-        # Make the API call to Ollama
-        response = requests.post(OLLAMA_API_URL, json=payload)
-        response.raise_for_status()  # Raise an exception for bad status codes
-        
-        # Parse the response
-        result = response.json()
-        
-        # Extract the message content from Ollama's response
-        if 'message' in result and 'content' in result['message']:
-            analysis_json = result['message']['content']
-        else:
-            # Fallback if response structure is different
-            analysis_json = result.get('response', '{}')
-        
-        return json.loads(analysis_json)
-        
-    except requests.exceptions.ConnectionError:
-        print("Error: Could not connect to Ollama. Make sure Ollama is running locally.")
-        print("Start Ollama with: ollama serve")
-        print("Then pull the model with: ollama pull deepseek-r1")
+        # response = client.chat.completions.create(
+        #     model="gpt-4.1-mini",
+        #     messages=[
+        #         {"role": "system", "content": "You are an expert compliance analyst AI."},
+        #         {"role": "user", "content": prompt}
+        #     ],
+        #     response_format={"type": "json_object"}
+        # )
+        # analysis_json = response.choices[0].message.content
+        # return json.loads(analysis_json)
+                # --- Ollama chat call (deepseek-r1:8b) ---
+
+        data_bytes = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            f"{OLLAMA_HOST}/api/chat",
+            data=data_bytes,
+            headers={"Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(req, timeout=600) as resp:
+            raw = resp.read().decode("utf-8")
+            data = json.loads(raw)
+
+        content = data.get("message", {}).get("content", "")
+        return json.loads(content)
+
+    except Exception as e:
+        print(f"An error occurred during API call or JSON parsing: {e}")
         return {
             "is_geo_compliance_needed": None,
             "reasoning": "Could not connect to Ollama service. Please ensure Ollama is running.",
-            "relevant_regulation": "N/A"
-        }
-    except requests.exceptions.RequestException as e:
-        print(f"An error occurred during Ollama API call: {e}")
-        return {
-            "is_geo_compliance_needed": None,
-            "reasoning": f"API request error: {str(e)}",
-            "relevant_regulation": "N/A"
-        }
-    except json.JSONDecodeError as e:
-        print(f"Error parsing JSON response from Ollama: {e}")
-        return {
-            "is_geo_compliance_needed": None,
-            "reasoning": f"JSON parsing error: {str(e)}",
-            "relevant_regulation": "N/A"
-        }
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        return {
-            "is_geo_compliance_needed": None,
-            "reasoning": f"Unexpected error: {str(e)}",
             "relevant_regulation": "N/A"
         }

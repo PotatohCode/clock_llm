@@ -1,7 +1,20 @@
 import csv
 import argparse
 import os
+import urllib.request
 from compliance_checker.analyzer import analyze_feature_description
+
+def _assert_ollama_alive():
+    host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+    try:
+        with urllib.request.urlopen(f"{host}/api/version", timeout=5) as resp:
+            _ = resp.read()
+    except Exception as e:
+        raise SystemExit(
+            f"Ollama server not reachable at {host}. "
+            f"Start it with `ollama serve` (or ensure the background service is running). "
+            f"Error: {e}"
+        )
 
 def process_csv(input_filepath: str, output_filepath: str):
     """
@@ -12,11 +25,15 @@ def process_csv(input_filepath: str, output_filepath: str):
         input_filepath: Path to the input CSV file.
         output_filepath: Path to the output CSV file.
     """
-    # No API key check needed for Ollama
-    print("Using Ollama with DeepSeek-R1 model...")
-    print("Make sure Ollama is running locally (ollama serve)")
-    print("And that you have pulled the model (ollama pull deepseek-r1)\n")
-
+    # Check for OpenAI API key
+    # if not os.getenv("OPENAI_API_KEY"):
+    #     print("Error: The OPENAI_API_KEY environment variable is not set.")
+    #     print("Please set it before running the script.")
+    #     print("Example: export OPENAI_API_KEY='your-api-key'")
+    #     return
+    
+    _assert_ollama_alive()
+    
     try:
         with open(input_filepath, mode='r', encoding='utf-8') as infile:
             reader = csv.DictReader(infile)
@@ -55,7 +72,7 @@ def process_csv(input_filepath: str, output_filepath: str):
 
             # Write results to the output file
             with open(output_filepath, mode='w', encoding='utf-8', newline='') as outfile:
-                writer = csv.DictWriter(outfile, fieldnames=fieldnames)
+                writer = csv.DictWriter(outfile, fieldnames=fieldnames, extrasaction="ignore")
                 writer.writeheader()
                 writer.writerows(results)
 
