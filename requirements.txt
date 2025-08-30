@@ -1,24 +1,2 @@
-# Web framework for API
-fastapi
-uvicorn[standard]
-
-# Data handling
-pydantic
-python-dotenv
-
-# LLM clients
 openai
-transformers
-sentence-transformers
-
-# Vector DB (for regulation retrieval)
-faiss-cpu
-
-# Parsing docs (PRD/TRD inputs)
-pdfplumber
-python-docx
-beautifulsoup4
-
-# Utilities
-numpy
-pandas
+python-dotenv
