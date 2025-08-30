@@ -90,7 +90,7 @@ def analyze_feature_description(description: str) -> dict:
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4-turbo",
+            model="gpt-4.1-mini",
             messages=[
                 {"role": "system", "content": "You are an expert compliance analyst AI."},
                 {"role": "user", "content": prompt}
