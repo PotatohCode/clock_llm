@@ -40,6 +40,24 @@ def _load_glossary(filepath: str = "data_set.csv") -> str:
         print(f"Warning: Failed to load glossary file. Error: {e}. Proceeding without it.")
         _glossary_cache = ""
         return ""
+    
+def _load_regulation(filepath: str = "regulation.csv") -> str:
+    """
+    Loads the regulation from the CSV file and formats it into a string.
+    Caches the result to avoid repeated file I/O.
+    """
+    try:
+        with open(filepath, mode='r', encoding='utf-8') as infile:
+            reader = csv.reader(infile)
+            regulations = [f"- {row[0]}: {row[1]}" for row in reader]
+
+        return "\n".join(regulations)
+    except FileNotFoundError:
+        print(f"Warning: Regulation file not found at '{filepath}'. Proceeding without it.")
+        return ""
+    except Exception as e:
+        print(f"Warning: Failed to load regulation file. Error: {e}. Proceeding without it.")
+        return ""
 
 # --- Main Analysis Function ---
 def analyze_feature_description(description: str) -> dict:
@@ -55,6 +73,7 @@ def analyze_feature_description(description: str) -> dict:
         }
 
     glossary_context = _load_glossary()
+    regulation_context = _load_regulation()
 
     prompt = f"""
     You are an expert compliance analyst AI. Your task is to determine if a feature
@@ -74,6 +93,12 @@ def analyze_feature_description(description: str) -> dict:
     {glossary_context}
     </GLOSSARY>
     ---
+    
+    We can focus on identifying the following regulations first:
+    ---
+    <REGULATION>
+    {regulation_context}
+    </REGULATION>
 
     Now, analyze the following feature description:
     ---
